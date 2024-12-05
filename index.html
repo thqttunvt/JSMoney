@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quản Lý Giá Tiền</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <div class="item">
+        <div class="product-title">
+          <h1 class="title-h1">Shop Hoàng</h1>
+        </div>
+        <div class="manager">
+          <div class="banner">
+            <h3>Thông tin sản phẩm</h3>
+          </div>
+          <form id="product-form">
+            <div class="manager-item">
+              <div class="form-group">
+                <!-- Mã sản phẩm -->
+                <label for="product-code" class="form-label">Mã Sản Phẩm</label>
+                <input
+                  id="product-code"
+                  type="text"
+                  class="form-control"
+                  placeholder="Nhập mã sản phẩm"
+                />
+
+                <!-- Tên sản phẩm -->
+                <label for="product-name" class="form-label"
+                  >Tên Sản Phẩm</label
+                >
+                <input
+                  id="product-name"
+                  type="text"
+                  class="form-control"
+                  placeholder="Nhập tên sản phẩm"
+                />
+
+                <!-- Giá tiền cũ -->
+                <label for="old-price" class="form-label">Giá Tiền Cũ</label>
+                <input
+                  id="old-price"
+                  type="number"
+                  class="form-control"
+                  placeholder="Nhập giá tiền cũ"
+                />
+
+                <!-- Giá tiền mới -->
+                <label for="new-price" class="form-label">Giá Tiền Mới</label>
+                <input
+                  id="new-price"
+                  type="number"
+                  class="form-control"
+                  placeholder="Nhập giá tiền mới"
+                />
+
+                <!-- Giá khuyến mãi -->
+                <label for="discount-price" class="form-label"
+                  >Khuyến Mãi</label
+                >
+                <input
+                  id="discount-price"
+                  type="text"
+                  class="form-control"
+                  placeholder="Nhập giá khuyến mãi"
+                />
+              </div>
+
+              <!-- Nút ADD -->
+              <div class="btn-add">
+                <button type="submit" class="btn-submit">Thêm</button>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <!-- Đường kẻ dọc -->
+        <div class="column"></div>
+
+        <!-- Bên phải -->
+        <div class="search_product">
+          <div class="search">
+            <input
+              type="text"
+              name="find-product"
+              class="form-control"
+              placeholder="Tìm kiếm tên sản phẩm"
+            />
+          </div>
+        </div>
+        <div class="manager-product">
+          <div class="product-list" id="product-list">
+            <!-- Danh sách sản phẩm sẽ được hiển thị ở đây -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="./index.js"></script>
+  </body>
+</html>
+```
