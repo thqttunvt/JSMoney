@@ -1,15 +1,15 @@
 // Prevent the form from reloading the page when submitted
 document.querySelector("form").addEventListener("submit", (event) => {
-  event.preventDefault(); // Prevent the default form submission behavior
+  event.preventDefault(); // chặn reset trang
 
-  // Collect product data from the form
+  // lấy thông tin sản phẩm từ from
   let productCode = document.querySelector("#product-code").value;
   let productName = document.querySelector("#product-name").value;
   let oldPrice = document.querySelector("#old-price").value;
   let newPrice = document.querySelector("#new-price").value;
   let discountPrice = document.querySelector("#discount-price").value;
 
-  // Validate form inputs
+  // hàm kiểm tra có để trống thông tin hay không
   if (
     !productCode ||
     !productName ||
@@ -21,7 +21,7 @@ document.querySelector("form").addEventListener("submit", (event) => {
     return;
   }
 
-  // Create product object
+  // tạo đối tượng sản phẩm
   let item = {
     id: new Date().toISOString(),
     productCode: productCode.trim(),
@@ -29,14 +29,14 @@ document.querySelector("form").addEventListener("submit", (event) => {
     oldPrice: oldPrice.trim(),
     newPrice: newPrice.trim(),
     discountPrice: discountPrice.trim(),
-    options: [], // Empty array for options
-    optionssize: [],
+    options: [], // Mảng rỗng cho options
+    optionssize: [], // Mảng rỗng cho optionssize
   };
 
-  addItemToUI(item); // Display the product on the UI
+  addItemToUI(item); // thêm sản phẩm lên ui
   addItemToLS(item); // Store the product in localStorage
 
-  // Clear the form inputs after submission
+  // xóa dữ liệu từ from sau khi bấm thêm sản phẩm
   document.getElementById("product-code").value = "";
   document.getElementById("product-name").value = "";
   document.getElementById("old-price").value = "";
@@ -46,82 +46,158 @@ document.querySelector("form").addEventListener("submit", (event) => {
 
 // hàm hiển thị item lên ui
 const addItemToUI = (item) => {
-  const {
-    id,
-    productCode,
-    productName,
-    oldPrice,
-    newPrice,
-    discountPrice,
-    options = [],
-    optionssize = [],
-  } = item;
-  let newCard = document.createElement("div");
-  newCard.className = "product-item";
-  newCard.innerHTML = `
-        <div class="product-details-code">${productCode}</div>
-        <div class="product-details-name">${productName}</div>
-        <div class="product-details-oldprice">${oldPrice}</div>
-        <div class="product-details-newprice">${newPrice}</div>
-        <div class="product-details-discountprice">${discountPrice}</div>
-        <button class="btn-option">Thêm Option</button>
-        <button data-id="${id}" class="btn-remove">Xóa Sản Phẩm</button>
-    `;
-  // hiển thị các tùy chọn cho option này
-  let optionContainer = document.createElement("div");
-  optionContainer.className = "option-container";
-  options.forEach((option) => {
-    let optionItem = document.createElement("div");
-    optionItem.className = "option-item";
-    optionItem.innerHTML = `
-            Màu: <input type="text" class="form_color" value="${option.color}">
-            SL: <input type="number" class="form_amount" value="${option.quantity}" >
-            <button class="btn-edit-option">Sửa</button>
-            <button class="btn-add-size">+ size</button>
-            <button class="btn-remove-option">Xóa</button>
-        `;
-    optionContainer.appendChild(optionItem);
-  });
-  newCard.appendChild(optionContainer);
-  // hiển thị các tùy chọn cho option size này
-  let sizeContainer = document.createElement("div");
-  sizeContainer.className = "size-container";
+  //làm try catch để bắt lỗi trong 1 số trường hợp khi thông tin được hiểu thị lên ui sẽ xuất hiện lỗi
+  try {
+    const {
+      id,
+      productCode,
+      productName,
+      oldPrice,
+      newPrice,
+      discountPrice,
+      options = [],
+      optionssize = [],
+    } = item;
+    const newCard = document.createElement("div");
+    newCard.className = "product-item";
+    newCard.innerHTML = `
+          <div class="product_item_option">
+              <div class="product-details-code">${productCode}</div>
+              <div class="product-details-name">${productName}</div>
+              <div class="product-details-oldprice">${oldPrice}</div>
+              <div class="product-details-newprice">${newPrice}</div>
+              <div class="product-details-discountprice">${discountPrice}</div>
+              <button class="btn-option">Thêm Option</button>
+              <button data-id="${id}" class="btn-remove">Xóa Sản Phẩm</button>
+          </div>
+      `;
 
-  optionssize.forEach((optionsize) => {
-    let optionItemSize = document.createElement("div");
-    optionItemSize.className = "option-item-size";
-    optionItemSize.innerHTML = `
-            Size: <input type="text" class="form_size" value="${optionsize.size}">
-            SL: <input type="number" class="form_amount_size" value="${optionsize.quantitysize}">
-            <button class="btn-edit-size">Sửa size</button>
-            <button class="btn-remove-size">Xóa size</button>
-        `;
-    sizeContainer.appendChild(optionItemSize);
-  });
-  newCard.appendChild(sizeContainer);
-  document.querySelector("#product-list").appendChild(newCard);
+    // Tạo container cho options
+    const optionContainer = document.createElement("div");
+    optionContainer.className = "option-container";
+
+    // Thêm options hiện có
+    if (Array.isArray(options)) {
+      options.forEach((option) => {
+        const optionGroup = document.createElement("div");
+        optionGroup.className = "option-group";
+
+        // Tạo option item
+        const optionItem = document.createElement("div");
+        optionItem.className = "option-item";
+        optionItem.innerHTML = `
+                  Màu: <input type="text" class="form_color" value="${
+                    option.color || ""
+                  }" readonly>
+                  SL: <input type="number" class="form_amount" value="${
+                    option.quantity || ""
+                  }" readonly>
+                  <button class="btn-edit-option">Sửa</button>
+                  <button class="btn-add-size">Thêm size</button>
+                  <button class="btn-remove-option">Xóa</button>
+              `;
+
+        // Tạo size container và thêm sizes
+        const sizeContainer = document.createElement("div");
+        sizeContainer.className = "size-container";
+
+        if (Array.isArray(option.sizes)) {
+          option.sizes.forEach((size) => {
+            const sizeItem = document.createElement("div");
+            sizeItem.className = "option-item-size";
+            sizeItem.innerHTML = `
+                          Size: <input type="text" class="form_size" value="${
+                            size.size || ""
+                          }" readonly>
+                          SL: <input type="number" class="form_amount_size" value="${
+                            size.quantitysize || ""
+                          }" readonly>
+                          <button class="btn-edit-size">Sửa size</button>
+                          <button class="btn-remove-size">Xóa size</button>
+                      `;
+            sizeContainer.appendChild(sizeItem);
+          });
+        }
+
+        optionGroup.appendChild(optionItem);
+        optionGroup.appendChild(sizeContainer);
+        optionContainer.appendChild(optionGroup);
+      });
+    }
+    newCard.appendChild(optionContainer);
+
+    // Tạo container cho sizes
+    const sizeContainer = document.createElement("div");
+    sizeContainer.className = "size-container";
+
+    // Thêm sizes hiện có
+    if (Array.isArray(optionssize)) {
+      optionssize.forEach((optionsize) => {
+        const sizeItem = document.createElement("div");
+        sizeItem.className = "option-item-size";
+        sizeItem.innerHTML = `
+                  Size: <input type="text" class="form_size" value="${
+                    optionsize.size || ""
+                  }">
+                  SL: <input type="number" class="form_amount_size" value="${
+                    optionsize.quantitysize || ""
+                  }">
+                  <button class="btn-edit-size">Sửa size</button>
+                  <button class="btn-remove-size">Xóa size</button>
+              `;
+        sizeContainer.appendChild(sizeItem);
+      });
+    }
+    newCard.appendChild(sizeContainer);
+
+    document.querySelector("#product-list").appendChild(newCard);
+  } catch (error) {
+    console.error("Lỗi khi thêm item vào UI:", error);
+  }
 };
 
 // lấy danh sánh từ ls
 const getList = () => {
-  return JSON.parse(localStorage.getItem("list")) || [];
+  try {
+    const list = localStorage.getItem("list");
+    return list ? JSON.parse(list) : [];
+  } catch (error) {
+    console.error("Lỗi khi lấy dữ liệu từ localStorage:", error);
+    return [];
+  }
 };
 
 // hàm add item vào ls
 const addItemToLS = (item) => {
-  let list = getList();
-  list.push(item);
-  localStorage.setItem("list", JSON.stringify(list));
+  try {
+    let list = getList();
+    list.push(item);
+    localStorage.setItem("list", JSON.stringify(list));
+    return true;
+  } catch (error) {
+    console.error("Lỗi khi thêm vào localStorage:", error);
+    return false;
+  }
 };
 
 // khởi tạo để lưu trữ
 const init = () => {
-  let list = getList();
-  list.forEach((item) => {
-    addItemToUI(item);
-  });
+  try {
+    const list = getList();
+    console.log("Dữ liệu khởi tạo:", list);
+    if (list && list.length > 0) {
+      document.querySelector("#product-list").innerHTML = "";
+      list.forEach((item) => addItemToUI(item));
+    }
+  } catch (error) {
+    console.error("Lỗi khởi tạo:", error);
+  }
 };
-init();
+
+// Khởi tạo ứng dụng
+document.addEventListener("DOMContentLoaded", () => {
+  init();
+});
 
 // hàm xóa sản phẩm trong ls
 const removeItemFromLS = (id) => {
@@ -132,193 +208,287 @@ const removeItemFromLS = (id) => {
 
 //  hàm thêm option vào ls
 const addOptionToLS = (productId, color, quantity) => {
-  let list = getList();
-  let product = list.find((item) => item.id === productId);
+  try {
+    let list = getList();
+    let product = list.find((item) => item.id === productId);
 
-  // Ensure product exists
-  if (!product) {
-    console.error(`Product with ID ${productId} not found.`);
-    return;
+    if (!product) {
+      console.error(`Không tìm thấy sản phẩm với ID ${productId}`);
+      return;
+    }
+
+    // Đảm bảo mảng options tồn tại
+    if (!Array.isArray(product.options)) {
+      product.options = [];
+    }
+
+    // Kiểm tra xem option đã tồn tại chưa
+    const existingOption = product.options.find((opt) => opt.color === color);
+    if (existingOption) {
+      existingOption.quantity = parseInt(quantity);
+    } else {
+      // Thêm option mới
+      product.options.push({
+        color: color,
+        quantity: parseInt(quantity),
+      });
+    }
+
+    // Lưu vào localStorage
+    localStorage.setItem("list", JSON.stringify(list));
+    console.log("Đã cập nhật localStorage:", product.options);
+    return true;
+  } catch (error) {
+    console.error("Lỗi khi thêm option:", error);
+    return false;
   }
-
-  // Ensure the options array exists
-  if (!product.options) {
-    product.options = [];
-  }
-
-  // Add the new option
-  product.options.push({ color, quantity });
-
-  // Update localStorage
-  localStorage.setItem("list", JSON.stringify(list));
 };
 
 //----------------------
 //hàm thêm option size vào ls
-const addOptionSizeToLS = (productId, size, quantitySize) => {
-  let list = getList();
-  let product = list.find((item) => item.id === productId);
 
-  // Ensure product exists
-  if (!product) {
-    console.error(`Product with ID ${productId} not found.`);
-    return;
+const addOptionSizeToLS = (productId, color, size, quantitySize) => {
+  try {
+    let list = getList();
+    let product = list.find((item) => item.id === productId);
+
+    if (!product) {
+      console.error(`Không tìm thấy sản phẩm với ID ${productId}`);
+      return;
+    }
+
+    // Tìm option theo màu
+    let option = product.options.find((opt) => opt.color === color);
+    if (!option) {
+      console.error(`Không tìm thấy option với màu ${color}`);
+      return;
+    }
+
+    // Đảm bảo mảng sizes tồn tại trong option
+    if (!Array.isArray(option.sizes)) {
+      option.sizes = [];
+    }
+
+    // Kiểm tra và thêm/cập nhật size
+    const existingSize = option.sizes.find((s) => s.size === size);
+    if (existingSize) {
+      existingSize.quantitysize = parseInt(quantitySize);
+    } else {
+      option.sizes.push({
+        size: size,
+        quantitysize: parseInt(quantitySize),
+      });
+    }
+
+    // Lưu vào localStorage
+    localStorage.setItem("list", JSON.stringify(list));
+    console.log(
+      "Đã cập nhật localStorage - sizes cho màu",
+      color,
+      ":",
+      option.sizes
+    );
+    return true;
+  } catch (error) {
+    console.error("Lỗi khi thêm size:", error);
+    return false;
   }
-
-  // Ensure the optionssize array exists
-  if (!product.optionssize) {
-    product.optionssize = [];
-  }
-
-  // Add the new size option
-  product.optionssize.push({ size, quantitySize });
-
-  // Update localStorage
-  localStorage.setItem("list", JSON.stringify(list));
 };
 
 //hàm chỉnh sửa optionsSize trong   ls
-const editOptionSizeInLS = (productId, oldSize, newSize, newQuantitySize) => {
-  let list = getList();
-  let product = list.find((item) => item.id === productId);
-  let optionsize = product.optionssize.find(
-    (option) => option.size === oldSize
-  );
+const editOptionsizeInLS = (productId, oldSize, newSize, newQuantitySize) => {
+  try {
+    let list = getList();
+    let product = list.find((item) => item.id === productId);
 
-  if (!product || !product.optionssize) {
-    console.error("Product or optionssize not found");
-    return;
-  }
+    if (!product) {
+      console.error("Không tìm thấy sản phẩm");
+      return;
+    }
 
-  // cập nhật optionsSize sau khi sửa
-  if (optionsize) {
-    optionsize.size = newSize;
-    optionsize.quantitysize = newQuantitySize;
-    localStorage.setItem("list", JSON.stringify(list));
+    // Tìm option chứa size cần sửa
+    const parentOption = product.options.find(
+      (option) => option.sizes && option.sizes.some((s) => s.size === oldSize)
+    );
+
+    if (parentOption && Array.isArray(parentOption.sizes)) {
+      // Tìm và cập nhật size
+      const sizeToUpdate = parentOption.sizes.find((s) => s.size === oldSize);
+      if (sizeToUpdate) {
+        sizeToUpdate.size = newSize;
+        sizeToUpdate.quantitysize = parseInt(newQuantitySize);
+        localStorage.setItem("list", JSON.stringify(list));
+      }
+    }
+  } catch (error) {
+    console.error("Lỗi khi cập nhật size:", error);
   }
 };
 
 //hàm xóa optionsSize trong ls
 const removeOptionSizeFromLS = (productId, size) => {
-  let list = getList();
-  let product = list.find((item) => item.id === productId);
-  product.optionssize = product.optionssize.filter(
-    (option) => option.size !== size
-  );
-  localStorage.setItem("list", JSON.stringify(list));
+  try {
+    let list = getList();
+    const product = list.find((item) => item.id === productId);
+
+    if (!product) {
+      console.error("Không tìm thấy sản phẩm");
+      return;
+    }
+
+    if (!Array.isArray(product.optionssize)) {
+      product.optionssize = [];
+    }
+
+    product.optionssize = product.optionssize.filter(
+      (option) => option.size !== size
+    );
+    localStorage.setItem("list", JSON.stringify(list));
+
+    console.log(
+      "Đã xóa size:",
+      size,
+      "Danh sách size còn lại:",
+      product.optionssize
+    );
+  } catch (error) {
+    console.error("Lỗi khi xóa size:", error);
+  }
 };
 //-------------
 //  hàm xóa option trong ls
 const removeOptionFromLS = (productId, color) => {
-  let list = getList();
-  let product = list.find((item) => item.id === productId);
-  product.options = product.options.filter((option) => option.color !== color);
-  localStorage.setItem("list", JSON.stringify(list));
+  try {
+    let list = getList();
+    let product = list.find((item) => item.id === productId);
+
+    if (!product) {
+      console.error("Không tìm thấy sản phẩm");
+      return;
+    }
+
+    // Xóa option và tất cả sizes của nó
+    product.options = product.options.filter(
+      (option) => option.color !== color
+    );
+
+    localStorage.setItem("list", JSON.stringify(list));
+    console.log(`Đã xóa màu ${color} và tất cả sizes liên quan`);
+  } catch (error) {
+    console.error("Lỗi khi xóa option:", error);
+  }
 };
 
 // hàm chỉnh sửa option trong ls
 const editOptionInLS = (productId, oldColor, newColor, newQuantity) => {
-  let list = getList();
-  let product = list.find((item) => item.id === productId);
-  let option = product.options.find((option) => option.color === oldColor);
+  try {
+    let list = getList();
+    let product = list.find((item) => item.id === productId);
 
-  if (!product || !product.optionssize) {
-    console.error("Product or optionssize not found");
-    return;
-  }
+    if (!product || !product.options) {
+      console.error("Không tìm thấy sản phẩm hoặc options");
+      return;
+    }
 
-  // Update option if it exists
-  if (option) {
-    option.color = newColor;
-    option.quantity = newQuantity;
-    localStorage.setItem("list", JSON.stringify(list));
+    let option = product.options.find((option) => option.color === oldColor);
+    if (option) {
+      option.color = newColor;
+      option.quantity = parseInt(newQuantity);
+      localStorage.setItem("list", JSON.stringify(list));
+    }
+  } catch (error) {
+    console.error("Lỗi khi cập nhật option:", error);
   }
 };
 //---------------
 
-// Handle option add, edit, and remove actions
+//Hàm handle để thêm option , edit, và hành động remove
 document.querySelector("#product-list").addEventListener("click", (event) => {
-  // thêm mới option
   if (event.target.classList.contains("btn-option")) {
-    const parentElement = event.target.parentElement;
-    const productId = parentElement.querySelector(".btn-remove").dataset.id;
+    const productItem = event.target.closest(".product-item");
+    const productId = productItem.querySelector(".btn-remove").dataset.id;
+    const optionContainer = productItem.querySelector(".option-container");
 
-    // tạo option mới trong trường hiển thị lên ui
+    // Tạo div mới cho mỗi option và sizes của nó
+    let optionGroup = document.createElement("div");
+    optionGroup.className = "option-group";
+
+    // Tạo phần option
     let optionItem = document.createElement("div");
     optionItem.className = "option-item";
-    optionItem.innerHTML = `
-            Màu: <input type="text" class="form_color" placeholder="Nhập màu">
-            SL: <input type="number" class="form_amount" placeholder="Nhập số lượng">
-            <button class="btn-edit-option">Sửa</button>
-            <button class="btn-add-size">+ size</button>
-            <button class="btn-remove-option">Xóa</button>
-        `;
-    parentElement.appendChild(optionItem);
+    optionItem.innerHTML = `                                                    
+          Màu: <input type="text" class="form_color" placeholder="Nhập màu" required>
+          SL: <input type="number" class="form_amount" placeholder="Nhập số lượng" min="1" required>
+          <button class="btn-edit-option">Sửa</button>
+          <button class="btn-add-size">Thêm size</button>
+          <button class="btn-remove-option" data-product-id="${productId}">Xóa</button>
+      `;
 
-    // lưu tùy chọn khi giá trị thay đổi
-    optionItem
-      .querySelector("input[type='text']")
-      .addEventListener("change", () => {
-        const color = optionItem.querySelector("input[type='text']").value;
-        const quantity = optionItem.querySelector("input[type='number']").value;
-        if (color && quantity) {
-          addOptionToLS(productId, color, quantity);
-        }
-      });
+    // Tạo container riêng cho sizes của option này
+    let sizeContainer = document.createElement("div");
+    sizeContainer.className = "size-container";
 
-    optionItem
-      .querySelector("input[type='number']")
-      .addEventListener("change", () => {
-        const color = optionItem.querySelector("input[type='text']").value;
-        const quantity = optionItem.querySelector("input[type='number']").value;
-        if (color && quantity) {
-          addOptionToLS(productId, color, quantity);
-        }
-      });
+    // Thêm cả option và size container vào group
+    optionGroup.appendChild(optionItem);
+    optionGroup.appendChild(sizeContainer);
+    optionContainer.appendChild(optionGroup);
+
+    // Xử lý lưu option
+    const colorInput = optionItem.querySelector(".form_color");
+    const quantityInput = optionItem.querySelector(".form_amount");
+
+    const saveOption = () => {
+      const color = colorInput.value.trim();
+      const quantity = quantityInput.value;
+
+      if (color && quantity) {
+        addOptionToLS(productId, color, quantity);
+        console.log("Đã lưu option:", { color, quantity });
+      }
+    };
+
+    colorInput.addEventListener("change", saveOption);
+    quantityInput.addEventListener("change", saveOption);
   }
 
-  //thêm mới option size
-
   if (event.target.classList.contains("btn-add-size")) {
-    const parentElement = event.target.parentElement;
-    const productId =
-      parentElement.querySelector(".btn-remove-option").dataset.id;
+    const optionGroup = event.target.closest(".option-group");
+    const productItem = event.target.closest(".product-item");
+    const productId = productItem.querySelector(".btn-remove").dataset.id;
+    const sizeContainer = optionGroup.querySelector(".size-container");
+    const optionColor = optionGroup.querySelector(".form_color").value;
 
-    // tạo option mới trong trường hiển thị lên ui
-    let optionItemSize = document.createElement("div");
-    optionItemSize.className = "option-item";
-    optionItemSize.innerHTML = `
-            Size: <input type="text" class="form_size" placeholder="Nhập size">
-            SL: <input type="number" class="form_amount_size" placeholder="Nhập số lượng">
-            <button class="btn-edit-size">Sửa size</button>
-            <button class="btn-remove-size">Xóa size</button>
-        `;
-    parentElement.appendChild(optionItemSize);
+    if (!optionColor) {
+      alert("Vui lòng nhập màu trước khi thêm size");
+      return;
+    }
 
-    // lưu tùy chọn khi giá trị thay đổi
-    optionItemSize
-      .querySelector("input[type='text']")
-      .addEventListener("change", () => {
-        const size = optionItemSize.querySelector("input[type='text']").value;
-        const quantitysize = optionItemSize.querySelector(
-          "input[type='number']"
-        ).value;
-        if (size && quantitysize) {
-          addOptionSizeToLS(productId, size, quantitysize);
-        }
-      });
+    let sizeItem = document.createElement("div");
+    sizeItem.className = "option-item-size";
+    sizeItem.innerHTML = `
+          Size: <input type="text" class="form_size" placeholder="Nhập size" required>
+          SL: <input type="number" class="form_amount_size" placeholder="Nhập số lượng" min="1" required>
+          <button class="btn-edit-size">Sửa size</button>
+          <button class="btn-remove-size" data-product-id="${productId}">Xóa size</button>
+      `;
+    sizeContainer.appendChild(sizeItem);
 
-    optionItemSize
-      .querySelector("input[type='number']")
-      .addEventListener("change", () => {
-        const size = optionItemSize.querySelector("input[type='text']").value;
-        const quantitysize = optionItemSize.querySelector(
-          "input[type='number']"
-        ).value;
-        if (size && quantitysize) {
-          addOptionSizeToLS(productId, size, quantitysize);
-        }
-      });
+    // Xử lý lưu size
+    const sizeInput = sizeItem.querySelector(".form_size");
+    const quantitySizeInput = sizeItem.querySelector(".form_amount_size");
+
+    const saveSize = () => {
+      const size = sizeInput.value.trim();
+      const quantitySize = quantitySizeInput.value;
+
+      if (size && quantitySize) {
+        addOptionSizeToLS(productId, optionColor, size, quantitySize);
+        console.log("Đã lưu size:", { color: optionColor, size, quantitySize });
+      }
+    };
+
+    sizeInput.addEventListener("change", saveSize);
+    quantitySizeInput.addEventListener("change", saveSize);
   }
 
   // hàm sửa option
@@ -332,10 +502,10 @@ document.querySelector("#product-list").addEventListener("click", (event) => {
 
     // tạo để chỉnh sửa tùy chọn
     optionItem.innerHTML = `
-            Màu: <input type="text" class="form_color" value="${oldColor}">
-            SL: <input type="number" class="form_amount" value="${oldQuantity}">
-            <button class="btn-save-option">Save</button>
-        `;
+          Màu: <input type="text" class="form_color" value="${oldColor}">
+          SL: <input type="number" class="form_amount" value="${oldQuantity}">
+          <button class="btn-save-option">Save</button>
+      `;
 
     // xử lý việc lưu chỉnh sửa
     optionItem
@@ -349,27 +519,26 @@ document.querySelector("#product-list").addEventListener("click", (event) => {
         if (newColor && newQuantity) {
           editOptionInLS(productId, oldColor, newColor, newQuantity);
           optionItem.innerHTML = `
-                    Màu: <input type="text" class="form_color" value="${newColor}" readonly>
-                    SL: <input type="number" class="form_amount" value="${newQuantity}" readonly>
-                    <button class="btn-edit-option">Sửa</button>
-                    <button class="btn-add-size">+ size</button>
-                    <button class="btn-remove-option">Xóa</button>
-                `;
+                  Màu: <input type="text" class="form_color" value="${newColor}" readonly>
+                  SL: <input type="number" class="form_amount" value="${newQuantity}" readonly>
+                  <button class="btn-edit-option">Sửa</button>
+                  <button class="btn-add-size">Thêm size</button>
+                  <button class="btn-remove-option">Xóa</button>
+              `;
         }
       });
   }
   // hàm  xóa option
   if (event.target.classList.contains("btn-remove-option")) {
-    const productId = parentElement
-      .closest(".product-item")
-      .querySelector(".btn-remove").dataset.id;
-    const color =
-      event.target.previousElementSibling.previousElementSibling.value;
+    const productItem = event.target.closest(".product-item");
+    const productId = productItem.querySelector(".btn-remove").dataset.id;
+    const optionGroup = event.target.closest(".option-group");
+    const optionItem = event.target.closest(".option-item");
+    const color = optionItem.querySelector(".form_color").value;
 
-    let isConfirmed = confirm("Bạn có chắc muốn xóa option không?");
-    if (isConfirmed) {
-      event.target.parentElement.remove(); // Remove the option from the UI
-      removeOptionFromLS(productId, color); // Remove the option from localStorage
+    if (confirm("Bạn có chắc muốn xóa option và tất cả sizes của nó không?")) {
+      optionGroup.remove(); // Xóa cả option group (bao gồm cả sizes)
+      removeOptionFromLS(productId, color);
     }
   }
   // hàm xóa sản phẩm
@@ -377,8 +546,8 @@ document.querySelector("#product-list").addEventListener("click", (event) => {
     let idRemove = event.target.dataset.id;
     let isConfirmed = confirm("Bạn có chắc muốn xóa sản phẩm không?");
     if (isConfirmed) {
-      event.target.parentElement.remove(); // Remove the product from the UI
-      removeItemFromLS(idRemove); // Remove the product from localStorage
+      event.target.parentElement.remove(); // xóa sản phẩm từ ui
+      removeItemFromLS(idRemove); // xóa sản phẩm từ ls
     }
   }
 
@@ -388,36 +557,31 @@ document.querySelector("#product-list").addEventListener("click", (event) => {
     const productId = event.target
       .closest(".product-item")
       .querySelector(".btn-remove").dataset.id;
-    const oldSize = optionItemSize.querySelector("input[type='text']").value;
-    const oldQuantitySize = optionItemSize.querySelector(
-      "input[type='number']"
-    ).value;
+    const oldSize = optionItemSize.querySelector(".form_size").value;
+    const oldQuantitySize =
+      optionItemSize.querySelector(".form_amount_size").value;
 
-    // tạo để chỉnh sửa tùy chọn
     optionItemSize.innerHTML = `
-            Size: <input type="text" class="form_size" value="${oldSize}">
-            SL: <input type="number" class="form_amount_size" value="${oldQuantitySize}">
-            <button class="btn-save-size">Save</button>
-        `;
+          Size: <input type="text" class="form_size" value="${oldSize}">
+          SL: <input type="number" class="form_amount_size" value="${oldQuantitySize}">
+          <button class="btn-save-size">Save</button>
+      `;
 
-    // xử lý việc lưu chỉnh sửa
     optionItemSize
       .querySelector(".btn-save-size")
       .addEventListener("click", () => {
-        const newSize =
-          optionItemSize.querySelector("input[type='text']").value;
-        const newQuantitySize = optionItemSize.querySelector(
-          "input[type='number']"
-        ).value;
+        const newSize = optionItemSize.querySelector(".form_size").value;
+        const newQuantitySize =
+          optionItemSize.querySelector(".form_amount_size").value;
 
         if (newSize && newQuantitySize) {
-          editOptionSizeInLS(productId, oldSize, newSize, newQuantitySize);
+          editOptionsizeInLS(productId, oldSize, newSize, newQuantitySize);
           optionItemSize.innerHTML = `
-                    Size: <input type="text" class="form_size" value="${newSize}">
-                    SL: <input type="number" class="form_amount_size" value="${newQuantitySize}">
-                    <button class="btn-edit-size">Sửa size</button>
-                    <button class="btn-remove-size">Xóa size</button>
-                `;
+                  Size: <input type="text" class="form_size" value="${newSize}" readonly>
+                  SL: <input type="number" class="form_amount_size" value="${newQuantitySize}" readonly>
+                  <button class="btn-edit-size">Sửa size</button>
+                  <button class="btn-remove-size">Xóa size</button>
+              `;
         }
       });
   }
@@ -453,3 +617,16 @@ document
       addItemToUI(item);
     });
   });
+
+// Thêm hàm utility để validate input
+const validateNumberInput = (input) => {
+  input.addEventListener("input", (e) => {
+    const value = parseFloat(e.target.value);
+    if (isNaN(value) || value < 0) {
+      e.target.value = "";
+    }
+  });
+};
+
+// Áp dụng validation cho tất cả input số
+document.querySelectorAll('input[type="number"]').forEach(validateNumberInput);
